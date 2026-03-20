@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nile Voyage - Flight View</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        header {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            text-align: center;
+        }
+        h1 {
+            margin: 0;
+            font-size: 2.5em;
+        }
+        .container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .search-box {
+            background: white;
+            color: black;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+        h2 {
+            margin-top: 0;
+            color: #333;
+        }
+        input {
+            width: calc(100% - 20px);
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            margin: 20px 0 10px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #5a6fd8;
+        }
+        #results {
+            margin-top: 20px;
+            text-align: left;
+        }
+        .flight {
+            background: #f9f9f9;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border-left: 5px solid #667eea;
+        }
+        footer {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            text-align: center;
+            font-size: 0.9em;
+        }
+        @media (max-width: 600px) {
+            .search-box {
+                padding: 20px;
+            }
+            h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Nile Voyage ✈️</h1>
+        <p>Your gateway to amazing flights</p>
+    </header>
+    <div class="container">
+        <div class="search-box">
+            <h2>Search Flights</h2>
+            <input id="from" placeholder="From (e.g., Cairo)" required>
+            <input id="to" placeholder="To (e.g., Dubai)" required>
+            <input type="date" id="date" required>
+            <button onclick="searchFlights()">Search Flights</button>
+            <div id="results"></div>
+        </div>
+    </div>
+    <footer>
+        <p>&copy; 2026 Nile Voyage. All rights reserved.</p>
+    </footer>
+    <script>
+        // Mock flight data with real-time availability
+        const flightData = {
+            'cairo-dubai': [
+                { airline: 'Emirates', price: 285, duration: '3h 45m', available: true, seats: 12 },
+                { airline: 'Etihad Airways', price: 320, duration: '3h 50m', available: true, seats: 8 },
+                { airline: 'Qatar Airways', price: 295, duration: '4h 15m', available: false, seats: 0 },
+                { airline: 'EgyptAir', price: 245, duration: '3h 55m', available: true, seats: 15 },
+                { airline: 'Air Arabia', price: 180, duration: '3h 30m', available: true, seats: 22 }
+            ],
+            'cairo-london': [
+                { airline: 'British Airways', price: 450, duration: '5h 20m', available: true, seats: 6 },
+                { airline: 'EgyptAir', price: 420, duration: '5h 35m', available: true, seats: 9 },
+                { airline: 'Lufthansa', price: 480, duration: '5h 10m', available: false, seats: 0 },
+                { airline: 'KLM', price: 465, duration: '5h 25m', available: true, seats: 4 }
+            ],
+            'cairo-paris': [
+                { airline: 'Air France', price: 395, duration: '4h 40m', available: true, seats: 11 },
+                { airline: 'EgyptAir', price: 375, duration: '4h 55m', available: true, seats: 7 },
+                { airline: 'Lufthansa', price: 410, duration: '4h 35m', available: false, seats: 0 }
+            ],
+            'cairo-istanbul': [
+                { airline: 'Turkish Airlines', price: 165, duration: '2h 15m', available: true, seats: 18 },
+                { airline: 'EgyptAir', price: 155, duration: '2h 25m', available: true, seats: 14 },
+                { airline: 'Pegasus', price: 135, duration: '2h 10m', available: true, seats: 25 }
+            ],
+            'dubai-cairo': [
+                { airline: 'Emirates', price: 275, duration: '3h 45m', available: true, seats: 10 },
+                { airline: 'Etihad Airways', price: 310, duration: '3h 50m', available: true, seats: 7 },
+                { airline: 'EgyptAir', price: 235, duration: '3h 55m', available: false, seats: 0 }
+            ]
+        };
+
+        function searchFlights() {
+            const from = document.getElementById('from').value.trim().toLowerCase();
+            const to = document.getElementById('to').value.trim().toLowerCase();
+            const date = document.getElementById('date').value;
+
+            if (!from || !to || !date) {
+                alert('Please fill in all fields.');
+                return;
+            }
+
+            const routeKey = `${from}-${to}`;
+            const flights = flightData[routeKey];
+
+            if (!flights) {
+                document.getElementById('results').innerHTML = `
+                    <div style="text-align: center; color: #666; padding: 20px;">
+                        <p>❌ No flights found for this route.</p>
+                        <p>Try popular routes like Cairo to Dubai, London, Paris, or Istanbul.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const searchDate = new Date(date);
+            const today = new Date();
+            const isPastDate = searchDate < today.setHours(0, 0, 0, 0);
+
+            let resultsHtml = `<h3>Flights from ${from.charAt(0).toUpperCase() + from.slice(1)} to ${to.charAt(0).toUpperCase() + to.slice(1)}</h3>`;
+            resultsHtml += `<p style="color: #666; font-size: 14px;">Departure: ${searchDate.toLocaleDateString()}</p>`;
+
+            const availableFlights = flights.filter(flight => flight.available && !isPastDate);
+
+            if (availableFlights.length === 0) {
+                resultsHtml += `
+                    <div style="text-align: center; color: #666; padding: 20px;">
+                        <p>❌ No available flights for the selected date.</p>
+                        <p>Please choose a future date or try a different route.</p>
+                    </div>
+                `;
+            } else {
+                availableFlights.forEach(flight => {
+                    const availabilityText = flight.seats <= 5 ? '⚠️ Only few seats left!' : '✅ Available';
+                    const availabilityColor = flight.seats <= 5 ? '#ff6b35' : '#28a745';
+
+                    resultsHtml += `
+                        <div class="flight">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <strong style="font-size: 18px;">${flight.airline}</strong>
+                                <span style="color: ${availabilityColor}; font-weight: bold;">${availabilityText}</span>
+                            </div>
+                            <div style="margin: 8px 0;">
+                                <span style="color: #007bff; font-weight: bold;">$${flight.price}</span> |
+                                Duration: ${flight.duration} |
+                                Seats available: ${flight.seats}
+                            </div>
+                            <button onclick="bookFlight('${flight.airline}', ${flight.price})"
+                                    style="background: #28a745; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; margin-top: 8px;">
+                                Book Now
+                            </button>
+                        </div>
+                    `;
+                });
+            }
+
+            document.getElementById('results').innerHTML = resultsHtml;
+        }
+
+        function bookFlight(airline, price) {
+            alert(`🎉 Booking confirmed!\n\nFlight: ${airline}\nPrice: $${price}\n\nThank you for choosing Nile Voyage! ✈️`);
+        }
+
+        // Add some popular destinations as suggestions
+        document.getElementById('from').addEventListener('focus', function() {
+            if (this.value === '') {
+                this.placeholder = 'Popular: Cairo, Dubai, London, Paris, Istanbul';
+            }
+        });
+
+        document.getElementById('to').addEventListener('focus', function() {
+            if (this.value === '') {
+                this.placeholder = 'Popular: Dubai, London, Paris, Istanbul, Cairo';
+            }
+        });
+    </script>
+</body>
+</html>
